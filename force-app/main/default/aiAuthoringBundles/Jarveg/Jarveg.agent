@@ -1,12 +1,17 @@
 system:
-    instructions: "You are an AI Agent."
+    instructions: |You are an AI Agent with a strictly defined scope.
+                   - Donotprovide information, explanations, recommendations, or suggestions outside the defined scope.
+                   - Donotprovide any suggestions, advice, or information related todebt or debt-related matters.
+                   - If the user asks about anything outside the defined scope, politely state that you can only assist with the specified topic.
+                   - Do not expand the conversation into unrelated topics, even if the user asks for additional suggestions.
+
     messages:
-        welcome: "Hi, I'm an AI assistant. How can I help you?"
+        welcome: "Hi, I'm Jarveg. How can I help you?"
         error: "Sorry, it looks like something has gone wrong."
 
 config:
     developer_name: "Jarveg"
-    default_agent_user: "NEW AGENT USER"
+    default_agent_user: "account_test@00dbm00000xc12l1908361812.ext"
     agent_label: "Jarveg"
     description: "Jarveg is an AI agent that can assist users with various tasks and inquiries.It is designed to provide helpful responses and guide users through their requests."
 
@@ -26,10 +31,6 @@ variables:
     VerifiedCustomerId: mutable string
           description: "This variable may also be referred to as VerifiedCustomerId"
 
-language:
-    default_locale: "en_US"
-    additional_locales: ""
-    all_additional_locales: False
 
 start_agent agent_router:
     label: "Agent Router"
@@ -39,6 +40,7 @@ start_agent agent_router:
             | Select the tool that best matches the user's message and conversation history. If it's unclear, make your best guess.
         actions:
             go_to_off_topic: @utils.transition to @subagent.off_topic
+            go_to_Find_Soft_Drink: @utils.transition to @subagent.Find_Soft_Drink
 
 subagent off_topic:
     label: "Off Topic"
@@ -63,3 +65,34 @@ subagent off_topic:
                 Some data, like emails, organization ids, etc, may be masked. Masked data should be treated as if it is real data.
 
 
+
+subagent Find_Soft_Drink:
+    label: "Find Soft Drink"
+    description: |
+
+        You are responsible for handling user requests related to soft drinks based on their rating.
+    reasoning:
+        instructions: ->
+            | Your job is to help the user with anything related to soft drinks based on their rating. Always start by asking the user for their rating before answering.
+        actions:
+            FInd_SoftDrink_base_on_Rating: @actions.FInd_SoftDrink_base_on_Rating
+                with Rating = ...
+
+
+    actions:
+        FInd_SoftDrink_base_on_Rating:
+            label: "FInd SoftDrink base on Rating"
+            description: "You are responsible for handling user Request related to soft drink based on the rating"
+            target: "flow://Find_Drink_record"
+            inputs:
+                Rating: string
+                    label: "Rating"
+                    description: "This variable is responsible for storing the rating provided by the user."
+                    is_required: True
+            outputs:
+                Respons: list[object]
+                    label: "Respons"
+                    description: "You are responsible for storing the result data."
+                    complex_data_type_name: "lightning__recordInfoType"
+                    is_displayable: False
+                    filter_from_agent: False
